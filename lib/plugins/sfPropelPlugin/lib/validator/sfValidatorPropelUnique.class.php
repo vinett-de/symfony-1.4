@@ -86,6 +86,7 @@ class sfValidatorPropelUnique extends sfValidatorSchema
     $fields = $this->getOption('field');
 
     $criteria = new Criteria();
+    $count = 0;
     foreach ($columns as $i => $column)
     {
       $name = isset($fields[$i]) ? $fields[$i] : $column;
@@ -97,10 +98,16 @@ class sfValidatorPropelUnique extends sfValidatorSchema
 
       $colName = call_user_func(array(constant($this->getOption('model').'::PEER'), 'translateFieldName'), $column, BasePeer::TYPE_FIELDNAME, BasePeer::TYPE_COLNAME);
 
-      $criteria->add($colName, $values[$name]);
+      if (null !== $values[$name]) {
+        $criteria->add($colName, $values[$name]);
+        $count++;
+      }
     }
 
-    $object = call_user_func(array(constant($this->getOption('model').'::PEER'), 'doSelectOne'), $criteria, $this->getOption('connection'));
+    $object = null;
+    if($count > 0) {
+      $object = call_user_func(array(constant($this->getOption('model').'::PEER'), 'doSelectOne'), $criteria, $this->getOption('connection'));
+    }
 
     // if no object or if we're updating the object, it's ok
     if (null === $object || $this->isUpdate($object, $values))
